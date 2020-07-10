@@ -12,7 +12,7 @@ Before running any of these scripts, make sure the environment variable `ANSIBLE
 
 List all environments
 ```bash
-anible-environments -h
+ansible-environments -h
 ```
 
 List all groups for an environment
