@@ -10,19 +10,20 @@ sudo make install
 ## Usage
 Before running any of these scripts, make sure the environment variable `ANSIBLE_PROJECT_DIR` points to an ansible project directory.
 
+### Scripts
 List all environments
 ```bash
-ansible-environments -h
+ansible-environments
 ```
 
 List all groups for an environment
 ```bash
-ansible-groups -h
+ansible-groups [env]
 ```
 
 List all hosts for an environment and a group
 ```bash
-ansible-hosts -h
+ansible-hosts [env] [group]
 ```
 
 ## Directory Layout
