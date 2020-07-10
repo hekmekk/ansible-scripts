@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set +x
+
+_ansible_hosts() {
+	COMPREPLY=()
+
+	local cur=${COMP_WORDS[COMP_CWORD]}
+	local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+	local flags="-h --help"
+	local environments=$(ansible-environments | xargs)
+
+	case $cur in
+		-h | --help)
+			COMPREPLY=()
+			return 0
+			;;
+		*)
+			if [[ "$prev" == "ansible-hosts" ]]; then
+				COMPREPLY=( $(compgen -W "${flags} ${environments[@]}" -- $cur) )
+				return 0
+			fi
+			if [[ $environments =~ (^| )$prev($| ) ]]; then
+				local groups=$(ansible-groups $prev | xargs)
+				COMPREPLY=( $(compgen -W "${groups[@]}" -- $cur) )
+				return 0
+			fi
+			COMPREPLY=()
+			return 0
+			;;
+	esac
+}
+
+complete -F _ansible_hosts ansible-hosts
+

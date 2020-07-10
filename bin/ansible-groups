@@ -1,0 +1,29 @@
+#!/bin/bash
+
+ansible_groups_usage() {
+	echo "usage: ansible_groups [env]"
+	echo ""
+	echo "       environment variables:"
+	echo "       - ANSIBLE_PROJECT_DIR: path to your ansible project root directory"
+}
+
+if [[ "$1" =~ ^--?h(elp)?$ ]]; then
+	ansible_groups_usage
+	exit 0
+fi
+
+if [[ -z "$ANSIBLE_PROJECT_DIR" ]]; then
+	echo -e "error: No 'ANSIBLE_PROJECT_DIR' specified in your environment\n"
+	ansible_groups_usage
+	exit 1
+fi
+
+ansibleEnvironments=$(ansible-environments | xargs)
+if [[ ! $ansibleEnvironments =~ (^| )$1($| ) ]]; then
+	echo -e "error: missing or unknown env '$1'\n"
+	ansible_groups_usage
+	exit 1
+fi
+env=$1
+
+grep -E '^\[' $ANSIBLE_PROJECT_DIR/environments/$env/inventory | tr -d '\[\]' | grep -E -o '^[^:]+' | sort -u

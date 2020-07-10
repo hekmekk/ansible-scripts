@@ -1,0 +1,19 @@
+#!/bin/bash
+
+ansible_environments_usage() {
+	echo "usage: ansible_environments"
+	echo ""
+	echo "       environment variables:"
+	echo "       - ANSIBLE_PROJECT_DIR: path to your ansible project root directory"
+}
+
+if [[ "$1" =~ ^--?h(elp)?$ ]]; then
+	ansible_environments_usage
+	exit 0
+fi
+if [[ -z "$ANSIBLE_PROJECT_DIR" ]]; then
+	echo -e "error: No 'ANSIBLE_PROJECT_DIR' specified\n"
+	ansible_environments_usage
+	exit 1
+fi
+find $ANSIBLE_PROJECT_DIR/environments/ -maxdepth 1 -type d | awk 'BEGIN { FS = "/" } ; { print $NF }' | sed '/^$/d'

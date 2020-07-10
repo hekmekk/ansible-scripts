@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set +x
+
+_ansible_groups() {
+	COMPREPLY=()
+
+	local cur=${COMP_WORDS[COMP_CWORD]}
+	local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+	local flags="-h --help"
+	local environments=$(ansible-environments | xargs)
+
+	case $cur in
+		-h | --help)
+			COMPREPLY=()
+			return 0
+			;;
+		*)
+			if [[ "$prev" == "ansible-groups" ]]; then
+				COMPREPLY=( $(compgen -W "${flags} ${environments[@]}" -- $cur) )
+				return 0
+			fi
+			COMPREPLY=()
+			return 0
+			;;
+	esac
+}
+
+complete -F _ansible_groups ansible-groups

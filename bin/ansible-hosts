@@ -1,0 +1,37 @@
+#!/bin/bash
+
+ansible_hosts_usage() {
+	echo "usage: ansible_hosts [env] [group]"
+	echo ""
+	echo "       environment variables:"
+	echo "       - ANSIBLE_PROJECT_DIR: path to your ansible project root directory"
+}
+
+if [[ "$1" =~ ^--?h(elp)?$ ]]; then
+	ansible_hosts_usage
+	exit 0
+fi
+
+if [[ -z "$ANSIBLE_PROJECT_DIR" ]]; then
+	echo -e "error: No 'ANSIBLE_PROJECT_DIR' specified\n"
+	ansible_hosts_usage
+	exit 1
+fi
+
+ansibleEnvironments=$(ansible-environments | xargs)
+if [[ ! $ansibleEnvironments =~ (^| )$1($| ) ]]; then
+	echo -e "error: missing or unknown env '$1'\n"
+	ansible_hosts_usage
+	exit 1
+fi
+env=$1
+
+ansibleGroups=$(ansible-groups $env | xargs)
+if [[ ! $ansibleGroups =~ (^| )$2($| ) ]]; then
+	echo -e "error: missing or invalid group '$2'\n"
+	ansible_hosts_usage
+	exit 1
+fi
+group=$2
+
+ansible "$group" -i $ANSIBLE_PROJECT_DIR/environments/$env/inventory --list-hosts 2>/dev/null | grep -v hosts | tr -d ' '

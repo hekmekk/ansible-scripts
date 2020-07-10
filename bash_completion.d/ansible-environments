@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set +x
+
+_ansible_environments() {
+	COMPREPLY=()
+
+	local cur=${COMP_WORDS[COMP_CWORD]}
+	local prev=${COMP_WORDS[COMP_CWORD-1]}
+
+	local flags="-h --help"
+
+	case $cur in
+		-h | --help)
+			COMPREPLY=()
+			return 0
+			;;
+		*)
+			if [[ "$prev" == "ansible-environments" ]]; then
+				COMPREPLY=( $(compgen -W "${flags}" -- $cur) )
+				return 0
+			fi
+			COMPREPLY=()
+			return 0
+			;;
+	esac
+}
+
+complete -F _ansible_environments ansible-environments
