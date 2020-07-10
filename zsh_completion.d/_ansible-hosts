@@ -1,0 +1,13 @@
+#compdef ansible-hosts
+_ansible-hosts() {
+  # see: https://zsh.sourceforge.io/Doc/Release/Completion-System.html#Completion-System
+  # Section 'Grouping Options'
+  _arguments \
+    + arguments \
+      "(help)1:mandatory environment:($(ansible-environments))" \
+      "::optional group:($(ansible-groups $words[2] 2>/dev/null))" \
+    + '(help)' \
+      '(arguments)'{-h,--help}'[show help]'
+}
+
+compdef _ansible-hosts ansible-hosts

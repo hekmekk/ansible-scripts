@@ -1,0 +1,37 @@
+#!/bin/sh
+
+ansible_groups_usage() {
+  >&2 echo "usage: ansible_groups <env> [<host>]"
+  >&2 echo ""
+  >&2 echo "       environment variables:"
+  >&2 echo "       - ANSIBLE_PROJECT_DIR: path to your ansible project root directory"
+}
+
+help_pattern="^-h|--help$"
+if [ -z "$1" ] || echo "$1" | grep -q -E "$help_pattern"; then
+  ansible_groups_usage
+  exit 0
+fi
+
+if [ -z "$ANSIBLE_PROJECT_DIR" ]; then
+  >&2 echo "[$0] error: No 'ANSIBLE_PROJECT_DIR' specified in your environment"
+  ansible_groups_usage
+  exit 1
+fi
+
+ansible_environments=$(ansible-environments | xargs)
+env_pattern="(^|[^[:alnum:]_])$1([^[:alnum:]_]|$)"
+if echo "$ansible_environments" | grep -v -q -E "$env_pattern"; then
+  >&2 echo "[$0] error: unknown env '$1'"
+  ansible_groups_usage
+  exit 1
+fi
+env=$1
+
+if [ -z "$2" ]; then
+  grep -s -E '^\[' $ANSIBLE_PROJECT_DIR/environments/$env/inventory | tr -d '\[\]' | grep -E -o '^[^:]+' | sort -u
+else
+  host=$2
+  ansible $host -i $ANSIBLE_PROJECT_DIR/environments/$env/inventory -m debug -a var=group_names | grep -v group_names | grep -v $host | tr -d '[",\]}]' | tr -d ' ' |  sed '/^$/d' | sort
+fi
+

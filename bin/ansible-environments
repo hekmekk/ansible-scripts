@@ -1,0 +1,22 @@
+#!/bin/sh
+
+ansible_environments_usage() {
+  >&2 echo "usage: ansible_environments"
+  >&2 echo ""
+  >&2 echo "       environment variables:"
+  >&2 echo "       - ANSIBLE_PROJECT_DIR: path to your ansible project root directory"
+}
+
+help_pattern="^-h|--help$"
+if echo "$1" | grep -q -E "$help_pattern"; then
+  ansible_environments_usage
+  exit 0
+fi
+if [ -z "$ANSIBLE_PROJECT_DIR" ]; then
+  >&2 echo "[$0] error: No 'ANSIBLE_PROJECT_DIR' specified"
+  ansible_environments_usage
+  exit 1
+fi
+
+find $ANSIBLE_PROJECT_DIR/environments/ -maxdepth 1 -type d | awk 'BEGIN { FS = "/" } ; { print $NF }' | sed '/^$/d'
+

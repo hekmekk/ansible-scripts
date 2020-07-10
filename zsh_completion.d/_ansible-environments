@@ -1,0 +1,10 @@
+#compdef ansible-environments
+_ansible-environments() {
+  # see: https://zsh.sourceforge.io/Doc/Release/Completion-System.html#Completion-System
+  # Section 'Grouping Options'
+  _arguments \
+    + '(help)' \
+      {-h,--help}'[show help]'
+}
+
+compdef _ansible-environments ansible-environments

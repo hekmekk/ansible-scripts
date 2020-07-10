@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set +x
+
+_ansible_groups() {
+  case ${COMP_WORDS[COMP_CWORD-1]} in
+    -h | --help)
+      COMPREPLY=()
+      return
+      ;;
+  esac
+
+  case $COMP_CWORD in
+    1)
+      case ${COMP_WORDS[COMP_CWORD]} in
+        -*)
+          COMPREPLY=($(compgen -W "-h --help" -- "${COMP_WORDS[COMP_CWORD]}"))
+          ;;
+        *)
+          COMPREPLY=($(compgen -W "$(ansible-environments)" -- "${COMP_WORDS[COMP_CWORD]}"))
+          ;;
+      esac
+      ;;
+    2)
+      COMPREPLY=($(compgen -W "$(ansible-hosts ${COMP_WORDS[COMP_CWORD-1]} 2>/dev/null)" -- "${COMP_WORDS[COMP_CWORD]}"))
+      ;;
+  esac
+}
+
+complete -F _ansible_groups ansible-groups

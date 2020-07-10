@@ -1,0 +1,51 @@
+#!/bin/sh
+
+ansible_hosts_usage() {
+  >&2 echo "usage: ansible_hosts <env> [<group>]"
+  >&2 echo ""
+  >&2 echo "       environment variables:"
+  >&2 echo "       - ANSIBLE_PROJECT_DIR: path to your ansible project root directory"
+}
+
+help_pattern="^-h|--help$"
+if [ -z "$1" ] || echo "$1" | grep -q -E "$help_pattern"; then
+  ansible_hosts_usage
+  exit 0
+fi
+
+if [ -z "$ANSIBLE_PROJECT_DIR" ]; then
+  >&2 echo "[$0] error: No 'ANSIBLE_PROJECT_DIR' specified"
+  ansible_hosts_usage
+  exit 1
+fi
+
+env_arg=$1
+group_arg=$2
+
+ansible_environments=$(ansible-environments | xargs)
+env_pattern="(^|[^[:alnum:]_])$env_arg([^[:alnum:]_]|$)"
+if echo "$ansible_environments" | grep -v -q -E "$env_pattern"; then
+  >&2 echo "[$0] error: unknown env '$env_arg'"
+  ansible_hosts_usage
+  exit 1
+fi
+env=$env_arg
+
+hosts=""
+if [ -z "$group_arg" ]; then
+  hosts=$(ansible "all" -i $ANSIBLE_PROJECT_DIR/environments/$env/inventory --list-hosts | grep -v hosts | tr -d ' ' | sort)
+else
+  ansible_groups=$(ansible-groups $env | xargs)
+  group_pattern="(^|[^[:alnum:]_])$group_arg([^[:alnum:]_]|$)"
+  if echo "$ansible_groups" | grep -v -q -E "$group_pattern"; then
+    >&2 echo "[$0] error: invalid group '$group_arg'"
+    ansible_hosts_usage
+    exit 1
+  fi
+  group=$group_arg
+
+  hosts=$(ansible "$group" -i $ANSIBLE_PROJECT_DIR/environments/$env/inventory --list-hosts | grep -v hosts | tr -d ' ' | sort)
+fi
+
+echo $hosts | sed 's/\s/\n/g'
+
