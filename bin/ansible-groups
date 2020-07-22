@@ -26,4 +26,4 @@ if [[ ! $ansibleEnvironments =~ (^| )$1($| ) ]]; then
 fi
 env=$1
 
-grep -E '^\[' $ANSIBLE_PROJECT_DIR/environments/$env/inventory | tr -d '\[\]' | grep -E -o '^[^:]+' | sort -u
+grep -s -E '^\[' $ANSIBLE_PROJECT_DIR/environments/$env/inventory | tr -d '\[\]' | grep -E -o '^[^:]+' | sort -u
