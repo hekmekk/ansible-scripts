@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ansible_hosts_usage() {
-	echo "usage: ansible_hosts [env] [group]"
+	echo "usage: ansible_hosts [-l|--with-location] [env] [group]"
 	echo ""
 	echo "       environment variables:"
 	echo "       - ANSIBLE_PROJECT_DIR: path to your ansible project root directory"
@@ -12,6 +12,16 @@ if [[ "$1" =~ ^--?h(elp)?$ ]]; then
 	exit 0
 fi
 
+if [[ "$1" =~ ^(-l|--with-location)$ ]]; then
+	with_location=true
+	env_arg=$2
+	group_arg=$3
+else
+	with_location=false
+	env_arg=$1
+	group_arg=$2
+fi
+
 if [[ -z "$ANSIBLE_PROJECT_DIR" ]]; then
 	echo -e "error: No 'ANSIBLE_PROJECT_DIR' specified\n"
 	ansible_hosts_usage
@@ -19,19 +29,33 @@ if [[ -z "$ANSIBLE_PROJECT_DIR" ]]; then
 fi
 
 ansibleEnvironments=$(ansible-environments | xargs)
-if [[ ! $ansibleEnvironments =~ (^| )$1($| ) ]]; then
-	echo -e "error: missing or unknown env '$1'\n"
+if [[ ! $ansibleEnvironments =~ (^| )$env_arg($| ) ]]; then
+	echo -e "error: missing or unknown env '$env_arg'\n"
 	ansible_hosts_usage
 	exit 1
 fi
-env=$1
+env=$env_arg
 
 ansibleGroups=$(ansible-groups $env | xargs)
-if [[ ! $ansibleGroups =~ (^| )$2($| ) ]]; then
-	echo -e "error: missing or invalid group '$2'\n"
+if [[ ! $ansibleGroups =~ (^| )$group_arg($| ) ]]; then
+	echo -e "error: missing or invalid group '$group_arg'\n"
 	ansible_hosts_usage
 	exit 1
 fi
-group=$2
+group=$group_arg
 
-ansible "$group" -i $ANSIBLE_PROJECT_DIR/environments/$env/inventory --list-hosts 2>/dev/null | grep -v hosts | tr -d ' '
+hosts=$(ansible "$group" -i $ANSIBLE_PROJECT_DIR/environments/$env/inventory --list-hosts 2>/dev/null | grep -v hosts | tr -d ' ')
+
+hosts_output=""
+
+for host in $hosts; do
+	if [ "$with_location" = true ]; then
+		location=$((grep -s -o -E "^location: \w+" $ANSIBLE_PROJECT_DIR/environments/preseed/host_vars/$host || echo 'location: none') | tr -d ' ' | awk 'BEGIN { FS = ":" } ; { print $NF }')
+		hosts_output+="$host $location\n"
+	else
+		hosts_output+="$host\n"
+	fi
+done;
+
+echo -e $hosts_output | column -t
+

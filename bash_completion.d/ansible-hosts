@@ -7,7 +7,7 @@ _ansible_hosts() {
 	local cur=${COMP_WORDS[COMP_CWORD]}
 	local prev=${COMP_WORDS[COMP_CWORD-1]}
 
-	local flags="-h --help"
+	local flags="-h --help -l --with-location"
 	local environments=$(ansible-environments | xargs)
 
 	case $cur in
@@ -18,6 +18,10 @@ _ansible_hosts() {
 		*)
 			if [[ "$prev" == "ansible-hosts" ]]; then
 				COMPREPLY=( $(compgen -W "${flags} ${environments[@]}" -- $cur) )
+				return 0
+			fi
+			if [[ "$prev" == "--with-location" || "$prev" == "-l" ]]; then
+				COMPREPLY=( $(compgen -W "${environments[@]}" -- $cur) )
 				return 0
 			fi
 			if [[ $environments =~ (^| )$prev($| ) ]]; then
