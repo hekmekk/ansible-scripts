@@ -50,7 +50,7 @@ hosts_output=""
 
 for host in $hosts; do
 	if [ "$with_location" = true ]; then
-		location=$((grep -s -o -E "^location: \w+" $ANSIBLE_PROJECT_DIR/environments/preseed/host_vars/$host || echo 'location: none') | tr -d ' ' | awk 'BEGIN { FS = ":" } ; { print $NF }')
+		location=$((find $ANSIBLE_PROJECT_DIR/environments -type f -name $host -exec grep -s -o -E "^location:\s?[^#]+" {} + || echo 'location: n/a') | tr -d ' ' | awk 'BEGIN { FS = ":" } ; { print $NF }')
 		hosts_output+="$host $location\n"
 	else
 		hosts_output+="$host\n"
