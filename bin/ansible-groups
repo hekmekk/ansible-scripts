@@ -30,6 +30,6 @@ if [ -z "$2" ]; then
 	grep -s -E '^\[' $ANSIBLE_PROJECT_DIR/environments/$env/inventory | tr -d '\[\]' | grep -E -o '^[^:]+' | sort -u
 else
 	host=$2
-	ansible $host -i $ANSIBLE_PROJECT_DIR/environments/$env/inventory -m debug -a var=group_names 2>/dev/null | grep -v group_names | grep -v $host | tr -d '[",\]}]' | tr -d ' ' |  sed '/^$/d'
+	ansible $host -i $ANSIBLE_PROJECT_DIR/environments/$env/inventory -m debug -a var=group_names 2>/dev/null | grep -v group_names | grep -v $host | tr -d '[",\]}]' | tr -d ' ' |  sed '/^$/d' | sort
 fi
 
